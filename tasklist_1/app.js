@@ -11,6 +11,7 @@ form.addEventListener('submit', addTask);
 taskInput.addEventListener('keyup', enableAddBtn);
 deleteAllBtn.addEventListener('click', deleteAll);
 ul.addEventListener('click', deleteTask);
+ul.addEventListener('click', completeTask);
 
 loadFromLocalStorage();
 
@@ -25,21 +26,39 @@ function addTask(e) {
 }
 
 function addTaskLi(taskText) {
-    let a = document.createElement('a');
+    let check = document.createElement('a');
+    let del = document.createElement('a');
     let li = document.createElement('li');
-    a.className = 'delete-item secondary-content';
-    a.innerHTML = '<i class="fa fa-remove"></i>';
+    check.className = 'secondary-content';
+    check.innerHTML = '<i class="material-icons">check</i>';
+    check.href = "#!";
+    check.style = 'margin-right: 12px;';
+    del.className = 'secondary-content';
+    del.innerHTML = '<i class="material-icons">delete</i>';
+    del.href = "#!";
     li.className = 'collection-item grey lighten-3';
     li.appendChild(document.createTextNode(taskText));
-    li.appendChild(a);
+    li.appendChild(del);
+    li.appendChild(check);
+    li.style = 'margin: 2px; box-shadow: 1px 1px #ccc;';
     ul.appendChild(li);
+}
+
+function completeTask(e) {
+    let target = e.target;
+    if (target.textContent === 'check') {
+        if (target.parentElement.parentElement.classList.contains('green'))
+            target.parentElement.parentElement.classList.replace('green', 'grey');
+        else
+            target.parentElement.parentElement.classList.replace('grey', 'green');
+    }
 }
 
 function deleteTask(e) {
     let target = e.target;
-    if (target.classList.contains('fa-remove')) {
+    if (target.textContent === 'delete') {
         target.parentElement.parentElement.remove();
-        deleteFromLocal(target.parentElement.parentElement.textContent);
+        deleteFromLocalStorage(target.parentElement.parentElement.childNodes[0].textContent);
     }
     
     if (ul.querySelector('li') === null)
@@ -74,7 +93,7 @@ function saveToLocalStorage(task) {
     localStorage.setItem('data', JSON.stringify(tasks));
 }
 
-function deleteFromLocal(taskToDelete) {
+function deleteFromLocalStorage(taskToDelete) {
     let stored = localStorage.getItem('data');
     let tasks = JSON.parse(stored);
 
