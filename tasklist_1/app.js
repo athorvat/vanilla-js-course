@@ -30,11 +30,11 @@ function addTaskLi(taskText) {
     let del = document.createElement('a');
     let li = document.createElement('li');
     check.className = 'secondary-content';
-    check.innerHTML = '<i class="material-icons">check</i>';
+    check.innerHTML = '<i class="material-icons">done</i>';
     check.href = "#!";
     check.style = 'margin-right: 12px;';
     del.className = 'secondary-content';
-    del.innerHTML = '<i class="material-icons">delete</i>';
+    del.innerHTML = '<i class="material-icons">clear</i>';
     del.href = "#!";
     li.className = 'collection-item grey lighten-3';
     li.appendChild(document.createTextNode(taskText));
@@ -46,17 +46,21 @@ function addTaskLi(taskText) {
 
 function completeTask(e) {
     let target = e.target;
-    if (target.textContent === 'check') {
-        if (target.parentElement.parentElement.classList.contains('green'))
+    if (target.textContent === 'done') {
+        if (target.parentElement.parentElement.classList.contains('green')) {
             target.parentElement.parentElement.classList.replace('green', 'grey');
-        else
+            target.parentElement.parentElement.classList.remove('grey-text');
+        }
+        else {
             target.parentElement.parentElement.classList.replace('grey', 'green');
+            target.parentElement.parentElement.classList.add('grey-text');
+        }
     }
 }
 
 function deleteTask(e) {
     let target = e.target;
-    if (target.textContent === 'delete') {
+    if (target.textContent === 'clear') {
         target.parentElement.parentElement.remove();
         deleteFromLocalStorage(target.parentElement.parentElement.childNodes[0].textContent);
     }
