@@ -4,28 +4,36 @@ const form = document.querySelector('#form');
 const taskInput = document.querySelector('#newTask');
 const addTaskBtn = document.querySelector('#addTask');
 const deleteAllBtn = document.querySelector('#deleteTasks');
+const filterInput = document.querySelector('#filter');
 const ul = document.querySelector('.collection');
 
 
 form.addEventListener('submit', addTask);
-taskInput.addEventListener('keyup', enableAddBtn);
+taskInput.addEventListener('input', enableAddBtn);
 deleteAllBtn.addEventListener('click', deleteAll);
+filterInput.addEventListener('input', filterTasks);
 ul.addEventListener('click', deleteTask);
 ul.addEventListener('click', completeTask);
 
 loadFromLocalStorage();
 
 function addTask(e) {
-    let taskText = taskInput.value;
-    if (taskText.trim() !== '') {
-        addTaskLi(taskText);
-        saveToLocalStorage(taskText);
+    let title = taskInput.value;
+    let status = 'none';
+    let priority = 'none';
+
+    //let taskToSave = new Task(title, status, priority);
+    let taskToSave = {title, status, priority};
+    
+    if (title.trim() !== '') {
+        addTaskLi(taskToSave);
+        saveToLocalStorage(taskToSave);
         taskInputReset();
     }
     e.preventDefault();
 }
 
-function addTaskLi(taskText) {
+function addTaskLi(task) {
     let check = document.createElement('a');
     let del = document.createElement('a');
     let li = document.createElement('li');
@@ -37,7 +45,7 @@ function addTaskLi(taskText) {
     del.innerHTML = '<i class="material-icons">clear</i>';
     del.href = "#!";
     li.className = 'collection-item grey lighten-3';
-    li.appendChild(document.createTextNode(taskText));
+    li.appendChild(document.createTextNode(task.title));
     li.appendChild(del);
     li.appendChild(check);
     li.style = 'margin: 2px; box-shadow: 1px 1px #ccc;';
@@ -70,16 +78,42 @@ function deleteTask(e) {
 }
 
 function deleteAll() {
-    ul.innerHTML = '';
-    deleteAllBtn.classList.replace('red', 'grey');
-    localStorage.setItem('data', JSON.stringify([]));
+    if (confirm('Delete ALL VISIBLE tasks?')) {
+        const list = document.querySelectorAll('li');
+        list.forEach(li => {
+            if (li.style.display !== 'none') {
+                li.remove();
+                deleteFromLocalStorage(li.firstChild.textContent);
+            }
+        });
+        
+		deleteAllBtn.classList.replace('red', 'grey');
+	}
+}
+
+function filterTasks() {
+    const list = document.querySelectorAll('li');
+    const filterText = filterInput.value.toLowerCase();
+    let displayedItemsCount = 0;
+    list.forEach(li => {
+        if (li.firstChild.textContent.toLowerCase().includes(filterText)) {
+            li.style.display = 'block';
+            displayedItemsCount++;
+        }
+        else
+            li.style.display = 'none';
+    });
+    if (displayedItemsCount === 0)
+        deleteAllBtn.classList.replace('red', 'grey');
+    else
+        deleteAllBtn.classList.replace('grey', 'red');
 }
 
 
 // LOCALSTORE
 
 function loadFromLocalStorage() {
-    let tasks = JSON.parse(localStorage.getItem('data'));
+    let tasks = JSON.parse(localStorage.getItem('datas'));
     tasks.forEach((task) => addTaskLi(task));
     
     if (ul.querySelector('li') !== null)
@@ -88,25 +122,25 @@ function loadFromLocalStorage() {
 
 function saveToLocalStorage(task) {
     let tasks;
-    let stored = localStorage.getItem('data');
+    let stored = localStorage.getItem('datas');
 
     if (stored === null) tasks = [];
     else tasks = JSON.parse(stored);
 
     tasks.push(task);
-    localStorage.setItem('data', JSON.stringify(tasks));
+    localStorage.setItem('datas', JSON.stringify(tasks));
 }
 
 function deleteFromLocalStorage(taskToDelete) {
-    let stored = localStorage.getItem('data');
+    let stored = localStorage.getItem('datas');
     let tasks = JSON.parse(stored);
 
     tasks.forEach(function(task, index) {
-        if (task === taskToDelete)
+        if (task.title === taskToDelete)
             tasks.splice(index, 1);    
     });
     
-    localStorage.setItem('data', JSON.stringify(tasks));
+    localStorage.setItem('datas', JSON.stringify(tasks));
 }
 
 
@@ -125,3 +159,17 @@ function enableAddBtn(e) {
         addTaskBtn.classList.replace('grey', 'green');
 }
 
+
+//TASK OBJECT
+
+class Task {
+    constructor (title, status, priority) {
+        this.title = title;
+        this.priority = priority;
+        this.status = status;
+    }
+}
+
+t1 = new Task('task1', 'future');
+
+console.log(JSON.stringify(t1));
